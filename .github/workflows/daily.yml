@@ -1,0 +1,24 @@
+name: Daily anime picture
+on:
+  schedule:
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download picture
+        run: |
+          URL=$(curl -s https://nekos.best/api/v2/neko | jq -r '.results[0].url')
+          curl -sL "$URL" -o today.png
+          curl -s https://nekos.best/api/v2/neko > /dev/null
+      - name: Commit
+        run: |
+          git config user.name "anime-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add today.png
+          git commit -m "New picture" || echo "No change"
+          git push
